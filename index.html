@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Online Quiz Portal</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#5d6773;--ac:#2456d6;--ac2:#fff;--bd:#dde1e7;--bad:#c62828;--ok:#2e7d32;--warn:#fff4e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171b;--card:#1d2127;--tx:#eceff3;--mu:#a0a9b5;--ac:#6c92ff;--ac2:#0b1020;--bd:#323941;--bad:#ff7b72;--ok:#6fcf74;--warn:#3a2f17}}
+:root[data-theme="dark"]{--bg:#14171b;--card:#1d2127;--tx:#eceff3;--mu:#a0a9b5;--ac:#6c92ff;--ac2:#0b1020;--bd:#323941;--bad:#ff7b72;--ok:#6fcf74;--warn:#3a2f17}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 80px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px}
+h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.15rem;margin:0 0 10px}
+.mu{color:var(--mu);font-size:.9rem}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:10px 18px;background:var(--ac);color:var(--ac2);font-weight:600}
+button.sec{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=text]{font:inherit;width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);margin:4px 0 12px}
+.consent{max-height:210px;overflow:auto;border:1px solid var(--bd);border-radius:8px;padding:12px;font-size:.92rem;background:var(--bg);margin-bottom:12px}
+.consent li{margin-bottom:6px}
+label.chk{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+.opt{display:flex;gap:10px;padding:12px;border:1px solid var(--bd);border-radius:8px;margin:8px 0;cursor:pointer}
+.opt:has(input:checked){border-color:var(--ac);outline:2px solid var(--ac)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+#cam{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:160px;border-radius:10px;border:2px solid var(--bad);background:#000;z-index:5}
+#rec{position:fixed;right:16px;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:6;background:var(--bad);color:#fff;font-size:.75rem;padding:2px 8px;border-radius:99px}
+#top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 16px;margin-bottom:16px;z-index:4}
+#warn{background:var(--warn);border:1px solid var(--bad);border-radius:8px;padding:10px;margin-top:8px;display:none;font-size:.9rem}
+.hide{display:none!important}
+table{width:100%;border-collapse:collapse;font-size:.88rem}td,th{text-align:left;padding:6px;border-bottom:1px solid var(--bd)}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.8);color:#fff;z-index:20;display:none;align-items:center;justify-content:center;text-align:center;padding:24px}
+.ovl div{max-width:420px}
+.err{color:var(--bad);font-size:.9rem}
+.q p{margin:0 0 8px}.q>*:last-child{margin-bottom:0}.q img{max-width:100%;height:auto;display:block;margin:8px 0;background:#fff;border-radius:6px}.opt .q p{margin:0}
+#qcard>.q{font-size:1.1rem;font-weight:600;margin-bottom:10px}
+</style>
+</head>
+<body>
+<main>
+<!-- STEP 1 -->
+<section id="s1">
+  <div class="card">
+    <h1 id="qtitle">Online Quiz Portal</h1>
+    <p class="mu" id="qmeta"></p>
+    <label>Full name<input type="text" id="name" autocomplete="name"></label>
+    <label>Email address<input type="text" id="sid" autocomplete="email" inputmode="email"></label>
+    <label>Exam set<select id="setSel" style="font:inherit;width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);margin:4px 0 4px"></select></label>
+  </div>
+  <div class="card">
+    <h2>Data Privacy Consent</h2>
+    <div class="consent">
+      <p>Before taking this exam, please read and agree to the following:</p>
+      <ol>
+        <li><b>What we collect:</b> video and audio from your camera and microphone for the entire duration of the exam, your answers, and a log of times you leave or switch away from the exam page.</li>
+        <li><b>Why:</b> solely to uphold academic integrity and verify that the exam was taken by you, honestly and without unauthorised help.</li>
+        <li><b>Who can access it:</b> only your instructor and authorised school personnel.</li>
+        <li><b>Retention:</b> recordings are kept only as long as needed to review the exam and are then deleted per school policy.</li>
+        <li><b>Your rights:</b> you may ask what data is held about you and request correction or deletion, consistent with the Data Privacy Act of 2012 (RA 10173) and school policy.</li>
+        <li><b>Consequences:</b> refusing camera or microphone access means you cannot take this proctored exam; please contact your instructor for an alternative arrangement.</li>
+      </ol>
+    </div>
+    <label class="chk"><input type="checkbox" id="agree"> <span>I have read and I voluntarily consent to the collection and processing of my video, audio and activity data as described above.</span></label>
+    <button id="toCheck" disabled>Continue to device check</button>
+    <p class="mu">This button unlocks once you enter your full name, a valid email (like name@school.edu.ph) and tick the consent box.</p>
+    <p id="aerr" class="err"></p>
+  </div>
+  <details class="card">
+    <summary><b>Instructor panel</b></summary>
+    <p class="mu">Upload one QTI package (1.2 or 2.x) per set. Sets are saved to your Drive and replace any earlier upload for that set.</p>
+    <label>Instructor password <input type="password" id="pw" style="font:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)"></label><br>
+    <label>Time limit (minutes) <input type="text" id="limit" value="30" style="width:80px"></label><br><br>
+    <label>Set A <input type="file" id="qtiA" accept=".zip"></label><br>
+    <label>Set B <input type="file" id="qtiB" accept=".zip"></label><br>
+    <label>Set C <input type="file" id="qtiC" accept=".zip"></label>
+    <p id="qmsg" class="mu"></p>
+    <hr style="border:0;border-top:1px solid var(--bd)">
+    <p class="mu">Student crashed or lost connection? Reset their one attempt (the old record stays in the log).</p>
+    <input type="text" id="rstEmail" placeholder="student@school.edu.ph">
+    <button class="sec" id="rst" type="button">Reset attempt</button>
+  </details>
+</section>
+
+<!-- STEP 2 -->
+<section id="s2" class="hide">
+  <div class="card">
+    <h2>Device check</h2>
+    <p class="mu">Allow camera and microphone access. Your face must be visible and your microphone working. The exam will go fullscreen.</p>
+    <video id="prev" autoplay muted playsinline style="width:100%;max-width:360px;border-radius:10px;background:#000"></video>
+    <div style="margin:10px 0"><span class="mu">Mic level</span><div style="height:8px;background:var(--bd);border-radius:4px;max-width:360px"><div id="lvl" style="height:8px;width:0;background:var(--ok);border-radius:4px"></div></div></div>
+    <p id="derr" class="err"></p>
+    <p class="mu">Step 1: enable camera &amp; mic. Step 2: share your <b>entire screen</b>. Then hold your school ID next to your face and press Start; a snapshot is saved.</p>
+    <div class="row"><button class="sec" id="enable">1. Enable camera &amp; mic</button><button class="sec" id="share">2. Share entire screen</button><button id="start" disabled>Start exam</button></div>
+  </div>
+</section>
+
+<!-- STEP 3 -->
+<section id="s3" class="hide">
+  <div id="top">
+    <div class="row"><b id="prog"></b><span id="timer" style="font-variant-numeric:tabular-nums"></span><span class="mu">Flags: <b id="fc">0</b></span></div>
+    <div id="warn"></div>
+  </div>
+  <div class="card" id="qcard"></div>
+  <div class="row"><button class="sec" id="prev_q">Back</button><button id="next_q">Next</button></div>
+  <video id="cam" autoplay muted playsinline></video><span id="rec">● REC</span>
+</section>
+
+<!-- STEP 4 -->
+<section id="s4" class="hide">
+  <div class="card">
+    <h1 id="doneH">Submitting your exam…</h1>
+    <p class="mu" id="upmsg">Keep this page open until the upload finishes.</p>
+    <div style="height:8px;background:var(--bd);border-radius:4px"><div id="upbar" style="height:8px;width:0;background:var(--ok);border-radius:4px"></div></div>
+    <p id="score" style="font-size:1.2rem"></p>
+    <p class="mu" id="when"></p>
+    <p id="uerr" class="err"></p>
+    <button id="retry" class="hide">Retry upload</button>
+  </div>
+  <div class="card"><h2>Activity log</h2><table id="log"></table></div>
+</section>
+</main>
+<div class="ovl" id="ovl"><div><h2>Return to the exam</h2><p id="ovlmsg"></p><button id="back">Resume exam in fullscreen</button></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const API_URL="https://script.google.com/macros/s/AKfycbxwTsGNXR4Awsod6J0RtowZumKiRD31oW2Cyd5MuIWHrVlE_CoMHX-0q4OJLnvsaky2/exec"; // Deploy > Manage deployments > Web app URL (ends in /exec)
+async function call(action,payload){
+  if(!API_URL.trim()||/PASTE_YOUR/.test(API_URL)) throw new Error("API_URL is not set in index.html"); const url=API_URL.trim();
+  const r=await fetch(url,{method:"POST",body:JSON.stringify({action,payload:payload||{}})}); // text/plain avoids a CORS preflight
+  if(!r.ok) throw new Error("Server returned "+r.status);
+  const o=await r.json(); if(!o.ok) throw new Error(o.error||"Server error"); return o;
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function retry(fn,n=3){ for(let i=0;;i++){ try{ return await fn(); }catch(e){ if(i>=n) throw e; await wait(1500*(i+1)); } } }
+const b64=blob=>new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.readAsDataURL(blob); });
+const fmt=d=>new Date(d).toLocaleString("en-PH",{dateStyle:"full",timeStyle:"medium"});
+const MAX_FILE=8*1024*1024;
+
+let sets=[],S=null,quiz=null,setKey="A",minutes=30,consentAt;
+let stream,recorder,answers={},cur=0,flags=[],inflight=[],active=false,endAt=0,tick,startedAt,audioCtx;
+let q=[],cn={cam:0,scr:0},pumping=false,scr,scrRec; const files={};
+
+/* ---- Step 1: load sets from server ---- */
+function fillSel(){ const s=$("setSel"); s.innerHTML="";
+  sets.forEach(x=>{ const o=document.createElement("option"); o.value=x.key; o.textContent="Set "+x.key+" – "+x.title+" ("+x.count+" questions)"; s.appendChild(o); });
+  meta(); chk(); }
+function meta(){ const x=sets.find(z=>z.key===$("setSel").value); setKey=x?x.key:"";
+  $("qtitle").textContent=x?x.title:"Online Quiz Portal";
+  $("qmeta").textContent=x?x.count+" questions · Proctored (camera, mic & tab monitoring)":"No exam sets have been uploaded yet."; }
+async function refreshSets(){ $("qmeta").textContent="Loading exam sets…"; try{ sets=(await retry(()=>call("sets"))).sets; }catch(e){ sets=[]; $("qmeta").textContent="Could not load exam sets: "+e.message; return; } fillSel(); }
+$("setSel").onchange=()=>{ meta(); chk(); };
+function chk(){ $("toCheck").disabled=!(setKey&&$("agree").checked&&$("name").value.trim()&&/^\S+@\S+\.\S+$/.test($("sid").value.trim())); }
+["agree","name","sid"].forEach(i=>["input","change","keyup","blur"].forEach(ev=>$(i).addEventListener(ev,chk)));
+setInterval(chk,500);
+function show(n){ ["s1","s2","s3","s4"].forEach(s=>$(s).classList.toggle("hide",s!=="s"+n)); window.scrollTo(0,0); }
+$("toCheck").onclick=()=>{ $("aerr").textContent=""; consentAt=new Date().toISOString(); show(2); };
+refreshSets();
+
+/* ---- Instructor tools ---- */
+const txt=h=>{ try{return (new DOMParser().parseFromString(h||"","text/html").body.textContent||"").trim();}catch(e){return h||"";} };
+async function parseQTI(file){
+  const zip=await JSZip.loadAsync(file), qs=[]; let title=file.name.replace(/\.zip$/i,"");
+  const imgData={}, used={}, miss=[], MIME={png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",webp:"image/webp",svg:"image/svg+xml"};
+  for(const n of Object.keys(zip.files)){ const m=n.match(/\.(png|jpe?g|gif|webp|svg)$/i); if(!m||zip.files[n].dir) continue; imgData[n.replace(/^web_resources\//,"")]="data:"+MIME[m[1].toLowerCase()]+";base64,"+await zip.files[n].async("base64"); }
+  const clean=h=>{ const d=new DOMParser().parseFromString(h||"","text/html");
+    d.querySelectorAll("img").forEach(im=>{ let s=im.getAttribute("src")||""; try{s=decodeURIComponent(s);}catch(e){} s=s.replace(/^.*\$IMS-CC-FILEBASE\$\//,"").replace(/^\/+/,"");
+      const k=imgData[s]?s:Object.keys(imgData).find(z=>z.split("/").pop()===s.split("/").pop());
+      if(k){ used[k]=imgData[k]; im.setAttribute("data-img",k); } else miss.push(s); im.removeAttribute("src"); });
+    return d.body.innerHTML; };
+  for(const name of Object.keys(zip.files)){
+    if(!/\.xml$/i.test(name)||/imsmanifest|assessment_meta|course_settings|context|module_meta|files_meta/i.test(name)) continue;
+    const doc=new DOMParser().parseFromString(await zip.files[name].async("string"),"application/xml");
+    const as=doc.querySelector("assessment"); if(as&&as.getAttribute("title")) title=as.getAttribute("title");
+    doc.querySelectorAll("item").forEach(it=>{ // QTI 1.2
+      const t=it.querySelector("presentation > material mattext, presentation material mattext"); if(!t) return;
+      const opts=[...it.querySelectorAll("response_label")].map(l=>({id:l.getAttribute("ident"),text:txt(l.querySelector("mattext")?.textContent),html:clean(l.querySelector("mattext")?.textContent)}));
+      let correct=null;
+      it.querySelectorAll("respcondition").forEach(rc=>{ const sv=rc.querySelector("setvar"); const ve=rc.querySelector("conditionvar > varequal"); if(sv&&ve&&parseFloat(sv.textContent)>0&&!correct) correct=ve.textContent.trim(); });
+      qs.push({text:txt(t.textContent),html:clean(t.textContent),options:opts,correct,type:opts.length?"mc":"file"});
+    });
+    const ai=doc.querySelector("assessmentItem"); // QTI 2.x
+    if(ai){ const opts=[...ai.querySelectorAll("simpleChoice")].map(c=>({id:c.getAttribute("identifier"),text:txt(c.textContent)}));
+      const pr=ai.querySelector("prompt")?.textContent||ai.querySelector("itemBody")?.firstChild?.textContent||ai.getAttribute("title");
+      if(opts.length) qs.push({text:txt(pr),options:opts,correct:ai.querySelector("correctResponse value")?.textContent.trim()||null}); }
+  }
+  if(!qs.length) throw new Error("No multiple-choice questions found in this package.");
+  return {title,questions:qs,images:used,missing:[...new Set(miss)]};
+}
+["A","B","C"].forEach(k=>$("qti"+k).onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const m=$("qmsg");
+  try{ m.textContent="Reading Set "+k+"…"; const z=await parseQTI(f); z.minutes=parseInt($("limit").value)||30;
+    await call("saveSet",{password:$("pw").value,key:k,quiz:z});
+    m.textContent="Set "+k+" saved: "+z.title+" ("+z.questions.length+" questions, "+z.minutes+" min, "+Object.keys(z.images).length+" images)."+(z.missing.length?" WARNING - images not found: "+z.missing.join(", "):""); refreshSets(); }
+  catch(err){ m.textContent="Set "+k+": "+err.message; } });
+$("rst").onclick=async()=>{ try{ const r=await call("resetAttempt",{password:$("pw").value,email:$("rstEmail").value}); $("qmsg").textContent="Reset "+r.count+" attempt(s)."; }catch(e){ $("qmsg").textContent=e.message; } };
+
+/* ---- Step 2: devices ---- */
+$("enable").onclick=async()=>{
+  $("derr").textContent="";
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,frameRate:15},audio:true});
+    $("prev").srcObject=stream;
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)(); const an=audioCtx.createAnalyser(); audioCtx.createMediaStreamSource(stream).connect(an);
+    const d=new Uint8Array(an.frequencyBinCount);
+    (function m(){ if(!stream) return; an.getByteFrequencyData(d); $("lvl").style.width=Math.min(100,Math.max(...d)/2.2)+"%"; requestAnimationFrame(m); })();
+    ready();
+  }catch(e){ const why={NotAllowedError:"Permission was denied (by you, by the browser, or because this page is embedded without camera permission).",NotFoundError:"No camera or microphone was found on this device.",NotReadableError:"Your camera or microphone is being used by another app (Zoom, Meet, Teams, another tab). Close it and try again.",SecurityError:"The browser blocked access for security reasons. Open the link directly in Chrome or Edge.",OverconstrainedError:"The camera does not support the requested settings."}[e.name]||"Unknown error."; $("derr").textContent="Could not start camera/microphone ["+(e.name||"error")+"]: "+why; }
+};
+
+$("share").onclick=async()=>{ $("derr").textContent="";
+  try{ const s=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"monitor"},audio:false});
+    const ds=s.getVideoTracks()[0].getSettings().displaySurface;
+    if(ds&&ds!=="monitor"){ s.getTracks().forEach(t=>t.stop()); $("derr").textContent="Please share your ENTIRE screen, not a tab or a window."; return; }
+    scr=s; $("share").textContent="Screen shared ✓"; ready();
+  }catch(e){ $("derr").textContent="Screen sharing was not started ["+(e.name||"error")+"]. You must share your entire screen."; } };
+function ready(){ $("start").disabled=!(stream&&scr); }
+
+/* ---- Recording upload queue (15 s pieces -> Drive) ---- */
+function enqueue(blob,kind){ q.push({n:cn[kind]++,kind,blob}); pump(); }
+async function pump(){ if(pumping) return; pumping=true;
+  try{ while(q.length){ const it=q[0]; await call("chunk",{id:S.id,kind:it.kind,folder:S.folder,n:it.n,b64:await b64(it.blob)}); q.shift(); } }catch(e){ /* retried on next piece or at submit */ }
+  pumping=false; }
+
+/* ---- Step 3: exam ---- */
+function flag(type,detail){ if(!active) return; const f={time:new Date().toISOString(),type,detail:detail||"",sent:false}; flags.push(f);
+  $("fc").textContent=flags.length; const w=$("warn"); w.style.display="block"; w.textContent="⚠ Flagged: "+type+". This has been recorded and will be reviewed by your instructor.";
+  const p=call("flag",{time:f.time,id:S.id,email:$("sid").value.trim().toLowerCase(),name:$("name").value.trim(),set:setKey,type,detail:f.detail}).then(()=>{f.sent=true;}).catch(()=>{});
+  inflight.push(p); }
+function overlay(msg){ if(!active) return; $("ovlmsg").textContent=msg; $("ovl").style.display="flex"; }
+$("back").onclick=async()=>{ $("ovl").style.display="none"; try{await document.documentElement.requestFullscreen();}catch(e){} };
+
+$("start").onclick=async()=>{
+  $("derr").textContent=""; $("start").disabled=true;
+  try{ S=await call("begin",{email:$("sid").value,name:$("name").value,set:setKey,consentAt}); }
+  catch(e){ $("derr").textContent=e.message; $("start").disabled=false; return; }
+  quiz={title:S.title,questions:S.questions,images:S.images||{}}; minutes=S.minutes||30;
+  try{await document.documentElement.requestFullscreen();}catch(e){}
+  const mt=["video/webm;codecs=vp8,opus","video/webm"].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t));
+  recorder=new MediaRecorder(stream,Object.assign({videoBitsPerSecond:500000,audioBitsPerSecond:64000},mt?{mimeType:mt}:{}));
+  q=[]; cn={cam:0,scr:0}; recorder.ondataavailable=e=>{ if(e.data.size) enqueue(e.data,"cam"); }; recorder.start(15000);
+  scrRec=new MediaRecorder(scr,Object.assign({videoBitsPerSecond:300000},mt?{mimeType:mt.split(",")[0]}:{})); scrRec.ondataavailable=e=>{ if(e.data.size) enqueue(e.data,"scr"); }; scrRec.start(15000);
+  scr.getTracks().forEach(t=>t.onended=()=>flag("Screen sharing stopped"));
+  (async()=>{ try{ const v=$("prev"),c=document.createElement("canvas"); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext("2d").drawImage(v,0,0); const bl=await new Promise(r=>c.toBlob(r,"image/jpeg",.85)); await retry(async()=>call("file",{id:S.id,folder:S.folder,q:"ID",name:"start_snapshot.jpg",mime:"image/jpeg",b64:await b64(bl)})); }catch(e){} })();
+  $("cam").srcObject=stream; stream.getTracks().forEach(t=>t.onended=()=>flag("Camera or microphone turned off",t.kind));
+  active=true; startedAt=new Date().toISOString(); cur=0; answers={}; flags=[]; inflight=[]; for(const k in files) delete files[k];
+  endAt=Date.now()+minutes*60000;
+  tick=setInterval(()=>{ const s=Math.max(0,Math.round((endAt-Date.now())/1000)); $("timer").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); if(!s) submit(); },500);
+  show(3); render();
+};
+function fileUI(c,i){ const n=document.createElement("p"); n.className="mu"; n.textContent="Attach your solution (photo, PDF or document, max 8 MB each) and/or type your answer below.";
+  const s=document.createElement("p"); s.className="mu"; s.textContent=(files[i]||[]).map(x=>x.name).join(", ");
+  const f=document.createElement("input"); f.type="file"; f.multiple=true;
+  f.onchange=()=>{ const ok=[...f.files].filter(x=>x.size<=MAX_FILE); if(ok.length<f.files.length) alert("Files over 8 MB were skipped."); files[i]=ok; s.textContent=ok.map(x=>x.name).join(", "); };
+  const t=document.createElement("textarea"); t.rows=4; t.style.cssText="width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)"; t.value=answers[i]||""; t.oninput=()=>answers[i]=t.value; c.append(n,f,s,t); }
+const OKT=new Set(["P","DIV","BR","B","STRONG","I","EM","U","SUB","SUP","SPAN","UL","OL","LI"]);
+function safeHTML(h){ const frag=document.createDocumentFragment();
+  const walk=(src,dst)=>src.childNodes.forEach(n=>{ if(n.nodeType===3) dst.appendChild(document.createTextNode(n.textContent));
+    else if(n.nodeType===1){ const t=n.tagName;
+      if(t==="IMG"){ const u=quiz.images&&quiz.images[n.getAttribute("data-img")]; if(u){ const im=document.createElement("img"); im.src=u; im.alt=n.getAttribute("alt")||"figure"; const w=parseInt(n.getAttribute("width")); if(w>0&&w<2000) im.style.width=w+"px"; dst.appendChild(im); } }
+      else if(OKT.has(t)){ const e=document.createElement(t.toLowerCase()); walk(n,e); dst.appendChild(e); }
+      else if(t!=="SCRIPT"&&t!=="STYLE") walk(n,dst); } });
+  walk(new DOMParser().parseFromString(h,"text/html").body,frag); return frag; }
+function render(){
+  const qq=quiz.questions[cur]; $("prog").textContent="Set "+setKey+" · Question "+(cur+1)+" of "+quiz.questions.length;
+  const c=$("qcard"); c.innerHTML=""; const h=document.createElement("div"); h.className="q"; if(qq.html) h.appendChild(safeHTML(qq.html)); else h.textContent=qq.text; c.appendChild(h);
+  if(!qq.options.length) fileUI(c,cur);
+  qq.options.forEach(o=>{ const l=document.createElement("label"); l.className="opt"; const r=document.createElement("input"); r.type="radio"; r.name="o"; r.checked=answers[cur]===o.id; r.onchange=()=>answers[cur]=o.id; const s=document.createElement("span"); s.className="q"; if(o.html) s.appendChild(safeHTML(o.html)); else s.textContent=o.text; l.append(r,s); c.appendChild(l); });
+  $("prev_q").disabled=cur===0; $("next_q").textContent=cur===quiz.questions.length-1?"Submit exam":"Next";
+}
+$("prev_q").onclick=()=>{cur--;render();};
+$("next_q").onclick=()=>{ if(cur<quiz.questions.length-1){cur++;render();} else if(confirm("Submit your exam now?")) submit(); };
+
+document.addEventListener("visibilitychange",()=>{ if(document.hidden){ flag("Left the exam page","Tab hidden or window switched"); overlay("You left the exam page. This was logged."); } });
+window.addEventListener("blur",()=>{ if(!document.hidden) flag("Window lost focus","Clicked outside or opened another window"); });
+document.addEventListener("fullscreenchange",()=>{ if(active&&!document.fullscreenElement){ flag("Exited fullscreen"); overlay("Please return to fullscreen to continue."); } });
+["copy","paste","cut","contextmenu"].forEach(ev=>document.addEventListener(ev,e=>{ if(active){e.preventDefault(); flag("Attempted "+ev);} }));
+window.addEventListener("beforeunload",e=>{ if(active){ e.preventDefault(); e.returnValue=""; } });
+
+/* ---- Step 4: submit ---- */
+async function submit(){
+  if(!active) return; active=false; clearInterval(tick);
+  await Promise.all([recorder,scrRec].map(r=>new Promise(res=>{ r.onstop=res; try{r.stop();}catch(e){res();} })));
+  scr.getTracks().forEach(t=>{t.onended=null;t.stop();}); scr=null;
+  stream.getTracks().forEach(t=>{t.onended=null;t.stop();}); stream=null;
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  $("ovl").style.display="none"; show(4); finish();
+}
+async function finish(){
+  $("retry").classList.add("hide"); $("uerr").textContent="";
+  const bar=p=>$("upbar").style.width=Math.round(p*100)+"%";
+  try{
+    $("upmsg").textContent="Uploading your recording…"; const total=q.length||1; let done=0;
+    while(q.length){ const it=q[0]; await retry(async()=>call("chunk",{id:S.id,kind:it.kind,folder:S.folder,n:it.n,b64:await b64(it.blob)})); q.shift(); bar(0.7*(++done/total)); }
+    $("upmsg").textContent="Uploading your files…";
+    for(const [i,arr] of Object.entries(files)) for(const x of arr){ if(x.done) continue; await retry(async()=>call("file",{id:S.id,folder:S.folder,q:+i+1,name:x.name,mime:x.type,b64:await b64(x)})); x.done=true; }
+    bar(0.85); await Promise.allSettled(inflight);
+    $("upmsg").textContent="Recording your answers…";
+    const fileNames=Object.fromEntries(Object.entries(files).map(([k,v])=>[k,v.map(x=>x.name)]));
+    const pending=flags.filter(f=>!f.sent).map(f=>({time:f.time,type:f.type,detail:f.detail}));
+    const r=await call("submit",{id:S.id,answers,fileNames,pending}); bar(1);
+    $("doneH").textContent="Exam submitted"; $("upmsg").textContent="Your recording, answers and flags were saved. You may close this page.";
+    $("score").textContent="Set "+setKey+" · Score: "+r.score+" / "+r.outOf+" · Flags: "+r.flags;
+    $("when").textContent="Date taken: "+fmt(startedAt)+" · Submitted: "+r.submitted+(quiz.questions.some(x=>!x.options.length)?" · File questions are graded manually.":"");
+  }catch(e){
+    if(/already submitted/i.test(e.message)){ $("doneH").textContent="Exam submitted"; $("upmsg").textContent="Your exam was already received."; bar(1); }
+    else{ $("doneH").textContent="Upload not finished"; $("upmsg").textContent=""; $("uerr").textContent="Something went wrong ("+e.message+"). Check your connection and click Retry. Do not close this page."; $("retry").classList.remove("hide"); }
+  }
+  const t=$("log"); t.innerHTML="<tr><th>Time</th><th>Event</th><th>Detail</th></tr>";
+  if(!flags.length){ const r=t.insertRow(); r.insertCell().textContent="—"; r.insertCell().textContent="No flags recorded"; r.insertCell(); }
+  flags.forEach(f=>{ const r=t.insertRow(); r.insertCell().textContent=new Date(f.time).toLocaleTimeString(); r.insertCell().textContent=f.type; r.insertCell().textContent=f.detail; });
+}
+$("retry").onclick=finish;
+</script>
+</body>
+</html>
