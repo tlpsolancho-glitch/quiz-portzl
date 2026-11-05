@@ -67,14 +67,12 @@ table{width:100%;border-collapse:collapse;font-size:.88rem}td,th{text-align:left
     <p class="mu">This button unlocks once you enter your full name, a valid email (like name@school.edu.ph) and tick the consent box.</p>
     <p id="aerr" class="err"></p>
   </div>
-  <details class="card">
+  <details class="card hide" id="adm">
     <summary><b>Instructor panel</b></summary>
     <p class="mu">Upload one QTI package (1.2 or 2.x) per set. Sets are saved to your Drive and replace any earlier upload for that set.</p>
     <label>Instructor password <input type="password" id="pw" style="font:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)"></label><br>
     <label>Time limit (minutes) <input type="text" id="limit" value="30" style="width:80px"></label><br><br>
-    <label>Set A <input type="file" id="qtiA" accept=".zip"></label><br>
-    <label>Set B <input type="file" id="qtiB" accept=".zip"></label><br>
-    <label>Set C <input type="file" id="qtiC" accept=".zip"></label>
+    <div id="uploads"></div>
     <p id="qmsg" class="mu"></p>
     <hr style="border:0;border-top:1px solid var(--bd)">
     <p class="mu">Student crashed or lost connection? Reset their one attempt (the old record stays in the log).</p>
@@ -135,20 +133,20 @@ async function call(action,payload){
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function retry(fn,n=3){ for(let i=0;;i++){ try{ return await fn(); }catch(e){ if(i>=n) throw e; await wait(1500*(i+1)); } } }
-const b64=blob=>new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.readAsDataURL(blob); });
+const b64=blob=>new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result.slice(r.result.indexOf(";base64,")+8)); r.readAsDataURL(blob); });
 const fmt=d=>new Date(d).toLocaleString("en-PH",{dateStyle:"full",timeStyle:"medium"});
 const MAX_FILE=8*1024*1024;
 
-let sets=[],S=null,quiz=null,setKey="A",minutes=30,consentAt;
+let sets=[],S=null,quiz=null,setKey="",minutes=30,consentAt;
 let stream,recorder,answers={},cur=0,flags=[],inflight=[],active=false,endAt=0,tick,startedAt,audioCtx;
 let q=[],cn={cam:0,scr:0},pumping=false,scr,scrRec; const files={};
 
 /* ---- Step 1: load sets from server ---- */
 function fillSel(){ const s=$("setSel"); s.innerHTML="";
-  sets.forEach(x=>{ const o=document.createElement("option"); o.value=x.key; o.textContent="Set "+x.key+" – "+x.title+" ("+x.count+" questions)"; s.appendChild(o); });
+  sets.forEach(x=>{ const o=document.createElement("option"); o.value=x.key; o.textContent=x.label+" ("+x.count+" questions)"; s.appendChild(o); });
   meta(); chk(); }
 function meta(){ const x=sets.find(z=>z.key===$("setSel").value); setKey=x?x.key:"";
-  $("qtitle").textContent=x?x.title:"Online Quiz Portal";
+  $("qtitle").textContent=x?x.label+": "+x.title:"Online Quiz Portal";
   $("qmeta").textContent=x?x.count+" questions · Proctored (camera, mic & tab monitoring)":"No exam sets have been uploaded yet."; }
 async function refreshSets(){ $("qmeta").textContent="Loading exam sets…"; try{ sets=(await retry(()=>call("sets"))).sets; }catch(e){ sets=[]; $("qmeta").textContent="Could not load exam sets: "+e.message; return; } fillSel(); }
 $("setSel").onchange=()=>{ meta(); chk(); };
@@ -159,6 +157,7 @@ function show(n){ ["s1","s2","s3","s4"].forEach(s=>$(s).classList.toggle("hide",
 $("toCheck").onclick=()=>{ $("aerr").textContent=""; consentAt=new Date().toISOString(); show(2); };
 refreshSets();
 
+if(/[?&]admin/.test(location.search)) $("adm").classList.remove("hide"); // instructor panel only at ...?admin
 /* ---- Instructor tools ---- */
 const txt=h=>{ try{return (new DOMParser().parseFromString(h||"","text/html").body.textContent||"").trim();}catch(e){return h||"";} };
 async function parseQTI(file){
@@ -189,11 +188,13 @@ async function parseQTI(file){
   if(!qs.length) throw new Error("No multiple-choice questions found in this package.");
   return {title,questions:qs,images:used,missing:[...new Set(miss)]};
 }
-["A","B","C"].forEach(k=>$("qti"+k).onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const m=$("qmsg");
-  try{ m.textContent="Reading Set "+k+"…"; const z=await parseQTI(f); z.minutes=parseInt($("limit").value)||30;
-    await call("saveSet",{password:$("pw").value,key:k,quiz:z});
-    m.textContent="Set "+k+" saved: "+z.title+" ("+z.questions.length+" questions, "+z.minutes+" min, "+Object.keys(z.images).length+" images)."+(z.missing.length?" WARNING - images not found: "+z.missing.join(", "):""); refreshSets(); }
-  catch(err){ m.textContent="Set "+k+": "+err.message; } });
+const LABELS={SQ3:"SQ3",SQ4:"SQ4",FLQ:"Finals Long Quiz",FE:"Finals Exam"}, lab=k=>(sets.find(z=>z.key===k)||{}).label||LABELS[k]||k;
+Object.keys(LABELS).forEach(k=>{ const lb=document.createElement("label"); lb.style.display="block"; const inp=Object.assign(document.createElement("input"),{type:"file",accept:".zip"}); lb.append(LABELS[k]+" ",inp); $("uploads").appendChild(lb);
+  inp.onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const m=$("qmsg");
+    try{ m.textContent="Reading "+LABELS[k]+"…"; const z=await parseQTI(f); z.minutes=parseInt($("limit").value)||30;
+      await call("saveSet",{password:$("pw").value,key:k,quiz:z});
+      m.textContent=LABELS[k]+" saved: "+z.title+" ("+z.questions.length+" questions, "+z.minutes+" min, "+Object.keys(z.images).length+" images)."+(z.missing.length?" WARNING - images not found: "+z.missing.join(", "):""); refreshSets(); }
+    catch(err){ m.textContent=LABELS[k]+": "+err.message; } }; });
 $("rst").onclick=async()=>{ try{ const r=await call("resetAttempt",{password:$("pw").value,email:$("rstEmail").value}); $("qmsg").textContent="Reset "+r.count+" attempt(s)."; }catch(e){ $("qmsg").textContent=e.message; } };
 
 /* ---- Step 2: devices ---- */
@@ -263,7 +264,7 @@ function safeHTML(h){ const frag=document.createDocumentFragment();
       else if(t!=="SCRIPT"&&t!=="STYLE") walk(n,dst); } });
   walk(new DOMParser().parseFromString(h,"text/html").body,frag); return frag; }
 function render(){
-  const qq=quiz.questions[cur]; $("prog").textContent="Set "+setKey+" · Question "+(cur+1)+" of "+quiz.questions.length;
+  const qq=quiz.questions[cur]; $("prog").textContent=lab(setKey)+" · Question "+(cur+1)+" of "+quiz.questions.length;
   const c=$("qcard"); c.innerHTML=""; const h=document.createElement("div"); h.className="q"; if(qq.html) h.appendChild(safeHTML(qq.html)); else h.textContent=qq.text; c.appendChild(h);
   if(!qq.options.length) fileUI(c,cur);
   qq.options.forEach(o=>{ const l=document.createElement("label"); l.className="opt"; const r=document.createElement("input"); r.type="radio"; r.name="o"; r.checked=answers[cur]===o.id; r.onchange=()=>answers[cur]=o.id; const s=document.createElement("span"); s.className="q"; if(o.html) s.appendChild(safeHTML(o.html)); else s.textContent=o.text; l.append(r,s); c.appendChild(l); });
@@ -301,7 +302,7 @@ async function finish(){
     const pending=flags.filter(f=>!f.sent).map(f=>({time:f.time,type:f.type,detail:f.detail}));
     const r=await call("submit",{id:S.id,answers,fileNames,pending}); bar(1);
     $("doneH").textContent="Exam submitted"; $("upmsg").textContent="Your recording, answers and flags were saved. You may close this page.";
-    $("score").textContent="Set "+setKey+" · Score: "+r.score+" / "+r.outOf+" · Flags: "+r.flags;
+    $("score").textContent=lab(setKey)+" · Score: "+r.score+" / "+r.outOf+" · Flags: "+r.flags;
     $("when").textContent="Date taken: "+fmt(startedAt)+" · Submitted: "+r.submitted+(quiz.questions.some(x=>!x.options.length)?" · File questions are graded manually.":"");
   }catch(e){
     if(/already submitted/i.test(e.message)){ $("doneH").textContent="Exam submitted"; $("upmsg").textContent="Your exam was already received."; bar(1); }
